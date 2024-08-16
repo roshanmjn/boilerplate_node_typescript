@@ -1,0 +1,30 @@
+{
+    "compilerOptions": {
+        "target": "ES2022",
+
+        /** Modules */
+        "module": "CommonJS",
+        "rootDir": "./src",
+        // "paths": { "@app/*": ["./src/*"] },
+        "types": ["node", "express", "socket.io"],
+        "moduleResolution": "Node",
+
+        /** Emit */
+        "noEmit": false,
+        "outDir": "./dist",
+        "esModuleInterop": true,
+        "forceConsistentCasingInFileNames": true,
+        "incremental": false,
+
+        /** Type Checking */
+        "strict": true,
+        "noUnusedLocals": false,
+        "noUnusedParameters": false,
+        "noFallthroughCasesInSwitch": true,
+
+        /** Completeness */
+        "skipLibCheck": true
+    },
+    "include": ["src/**/*"],
+    "exclude": ["node_modules"]
+}

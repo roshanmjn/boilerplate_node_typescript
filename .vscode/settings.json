@@ -1,0 +1,8 @@
+{
+    "yaml.schemas": {
+        "https://json.schemastore.org/github-workflow.json": "file:///g%3A/react%20projects/pubgback/.github/workflows/deploy.yml"
+    },
+    "outline.collapseItems": "alwaysExpand",
+    "explorer.compactFolders": false,
+    "editor.fontSize": 16
+}

@@ -1,0 +1,10 @@
+node_modules/
+.env
+frontend/node_modules/
+public
+attachments
+.prettierrc
+src/logs
+test-app.js
+pnpm-lock.yaml
+dist/
