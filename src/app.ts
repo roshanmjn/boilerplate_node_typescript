@@ -2,7 +2,7 @@ import express, { type Request, type Response, type NextFunction } from "express
 import "dotenv/config";
 import cors from "cors";
 import morgan from "morgan";
-import { customLogger } from "./utils/Logger";
+import { Logger } from "./utils/Logger";
 import { setHttpMethod } from "./utils/Logger/logUser";
 import * as uuid from "uuid";
 import v1 from "./routes";
@@ -10,11 +10,16 @@ import errorHandler from "./middlewares/errorHandler";
 import { NotFound, HttpException } from "./middlewares/errors";
 import initSocket from "./sockets";
 import { initializeSocket } from "./sockets/instance";
+import { sequelize } from "./database/connection";
+import { syncModels } from "./database/sync";
+import("./database/associations");
+import swaggerUi from "swagger-ui-express";
+import swaggerSpec from "./swagger";
 
 const app = express();
 const io = initializeSocket(app);
 
-app.use(morgan("combined"));
+// app.use(morgan("combined"));
 
 const port = process.env.PORT || 3000;
 app.use(
@@ -39,21 +44,25 @@ app.get("/", (_, res) => {
 
 app.use("/force-shutdown", (_, res) => {
     console.warn("Received shutdown request");
-    customLogger.warn("forceShutdown", "Received shutdown request");
+    Logger.warn("forceShutdown", "Received shutdown request");
     res.send("Server shutting down...");
     process.exit(0);
 });
 
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+app.get("/api-docs.json", (req, res) => {
+    res.setHeader("Content-Type", "application/json");
+    res.send(swaggerSpec);
+});
 app.use("/api/v1", v1);
 
 app.all("*", (req) => {
     let ipAddress = req.socket.remoteAddress == "::1" ? "localhost" : req.headers["x-forwarded-for"];
-    customLogger.info("PageNotFound", `Page not found: ${req.protocol}://${ipAddress}${req.originalUrl}, Browser Type: ${req.headers["user-agent"]}`);
+    Logger.info("PageNotFound", `Page not found: ${req.protocol}://${ipAddress}${req.originalUrl}, Browser Type: ${req.headers["user-agent"]}`);
     throw new NotFound("Page not found!");
 });
 
 /** Error handler middleware */
-app.use(errorHandler);
 
 io.on("connection", (socket) => {
     console.log(`${socket.id} connected`);
@@ -68,17 +77,25 @@ io.on("connection", (socket) => {
     });
 });
 
-app.listen(port, () => {
+app.listen(port, async () => {
     try {
+        await sequelize.authenticate();
+
+        await syncModels({ force: false });
+
         console.log(`listening to http://localhost:${port}`);
+        // console.log(`Swagger on http://localhost:${port}/api-docs`);
     } catch (err: any) {
-        customLogger.error("Server Error", "Error on app.js", err.stack);
+        console.error("Error on app.js: " + err.message);
+        Logger.error("Server Error", "Error on app.js", err.stack);
         throw new HttpException(500, "Internal server error");
     }
 });
-
+app.use(errorHandler);
 process.on("uncaughtException", (err) => {
-    customLogger.error("uncaughtException", "Error on app.js", [err.stack]);
+    console.error("uncaughtException: " + err.message);
+    Logger.error("uncaughtException", "Error on app.js", [err.stack]);
+    process.exit(1);
 });
 
 process.on("unhandledRejection", (reason, promise) => {
@@ -113,12 +130,14 @@ process.on("unhandledRejection", (reason, promise) => {
             if (error.stack) {
                 data += "Stack: " + error.stack + "\n \n \n";
             }
-
-            customLogger.error("unhandledRejection", "Rejected Promise Value:", [error, data]);
+            console.error(error);
+            Logger.error("unhandledRejection", "Rejected Promise Value:", [error, data]);
+            process.exit(1);
         });
     }
 });
 
 process.on("SyntaxError", (err) => {
-    customLogger.error("SyntaxError", "Syntax Error", [err.stack]);
+    console.log("SyntaxError: " + err.message);
+    Logger.error("SyntaxError", "Syntax Error", [err.stack]);
 });

@@ -1,3 +1,3 @@
-import * as authController from "../modules/auth/auth.controller";
+// import * as authController from "../modules/auth/auth.controller";
 
-export { authController };
+// export { authController };

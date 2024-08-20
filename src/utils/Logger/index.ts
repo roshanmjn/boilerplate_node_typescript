@@ -53,7 +53,7 @@ const logger = winston.createLogger({
     ],
 });
 
-export const customLogger = {
+export const Logger = {
     info: (functionName: string, message: string, context?: any[]) => {
         logger.info(`${message}`, { functionName, context });
     },

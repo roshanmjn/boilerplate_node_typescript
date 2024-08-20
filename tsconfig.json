@@ -5,7 +5,8 @@
         /** Modules */
         "module": "CommonJS",
         "rootDir": "./src",
-        // "paths": { "@app/*": ["./src/*"] },
+        "baseUrl": "./src",
+        "paths": { "*": ["*", "*.ts"] },
         "types": ["node", "express", "socket.io"],
         "moduleResolution": "Node",
 
@@ -23,8 +24,9 @@
         "noFallthroughCasesInSwitch": true,
 
         /** Completeness */
-        "skipLibCheck": true
+        "skipLibCheck": true,
+        "resolveJsonModule": true
     },
-    "include": ["src/**/*"],
-    "exclude": ["node_modules"]
+    "include": ["src/**/*.ts"],
+    "exclude": ["node_modules", "src/utils/generateModule.ts"]
 }

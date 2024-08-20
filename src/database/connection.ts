@@ -1,6 +1,4 @@
-import { Sequelize, Dialect } from "sequelize";
-import * as mysql2 from "mysql2/promise";
-import { RowDataPacket } from "mysql2";
+import { Sequelize, Dialect, QueryTypes } from "sequelize";
 import * as sequelizeConfig from "./sequelizeConfig";
 import "dotenv/config";
 
@@ -23,19 +21,11 @@ if (process.env.NODE_ENV === "production") {
 }
 
 console.log({ db: config.database });
-const DB = mysql2.createPool({
-    host: config.host,
-    user: config.username,
-    password: config.password,
-    database: config.database,
-    waitForConnections: true,
-    connectionLimit: 10,
-    queueLimit: 0,
-});
 
-const sequelize = new Sequelize(config.database, config.user, config.password, {
+const sequelize = new Sequelize(config.database, config.username, config.password, {
     host: config.host,
-    dialect: config.dialect as Dialect,
+    dialect: "postgres",
+    // logging: (...msg) => console.log(msg),
     logging: false,
     define: {
         freezeTableName: true,
@@ -46,10 +36,15 @@ const sequelize = new Sequelize(config.database, config.user, config.password, {
     },
 });
 
+type PingData = {
+    solution: number;
+};
 async function pingDB() {
     try {
-        const [rows] = await DB.query<RowDataPacket[]>("SELECT 1 + 1 AS solution");
-        console.log("The solution is: ", rows[0].solution);
+        const [rows]: PingData[] = await sequelize.query("SELECT 1 + 1 AS solution", {
+            type: QueryTypes.SELECT,
+        });
+        console.log("The solution is: ", rows?.solution);
     } catch (error) {
         throw error;
     }
@@ -61,4 +56,4 @@ setInterval(() => {
     pingDB();
 }, 40000);
 
-export { DB, sequelize };
+export { sequelize };

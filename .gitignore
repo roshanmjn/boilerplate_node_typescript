@@ -3,7 +3,6 @@ node_modules/
 frontend/node_modules/
 public
 attachments
-.prettierrc
 src/logs
 test-app.js
 pnpm-lock.yaml

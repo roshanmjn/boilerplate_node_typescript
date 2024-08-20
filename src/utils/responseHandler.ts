@@ -1,6 +1,6 @@
-const responseHandler = (response: unknown, statusCode: number = 200) => ({
-    status: statusCode ? statusCode : 200,
-    success: true,
+const responseHandler = (response: unknown, status = "success") => ({
+    // statusCode: statusCode ? statusCode : 200,
+    status: status,
     // @ts-ignore
     data: typeof response === "object" ? response : { ...response },
 });
